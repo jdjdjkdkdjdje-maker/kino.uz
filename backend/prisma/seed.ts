@@ -14,7 +14,11 @@ async function main(){
   for(const [name,icon] of movieCategories) await prisma.movieCategory.upsert({where:{name},update:{icon},create:{name,icon,slug:slug(name),order:movieCategories.findIndex(x=>x[0]===name)}});
   for(const [name,icon] of tvCategories) await prisma.tVCategory.upsert({where:{name},update:{icon},create:{name,icon,slug:slug(name),order:tvCategories.findIndex(x=>x[0]===name)}});
   for(const name of genreNames) await prisma.genre.upsert({where:{name},update:{},create:{name,slug:slug(name)}});
-  const admin = await prisma.user.upsert({where:{email:'admin@kinotv.uz'},update:{role:Role.ADMIN,isActive:true},create:{name:'KinoTV Admin',email:'admin@kinotv.uz',passwordHash:await bcrypt.hash('KinoTV_Admin_2026!',12),role:Role.ADMIN}});
+  const adminEmail=process.env.ADMIN_EMAIL||'admin@kinotv.uz';
+  const adminPassword=process.env.ADMIN_PASSWORD||'KinoTV_Admin_2026!';
+  if(adminPassword.length<12)throw new Error('ADMIN_PASSWORD kamida 12 belgidan iborat bo‘lishi kerak.');
+  const adminPasswordHash=await bcrypt.hash(adminPassword,12);
+  const admin = await prisma.user.upsert({where:{email:adminEmail},update:{role:Role.ADMIN,isActive:true,...(process.env.ADMIN_PASSWORD?{passwordHash:adminPasswordHash}:{})},create:{name:'KinoTV Admin',email:adminEmail,passwordHash:adminPasswordHash,role:Role.ADMIN}});
   await prisma.admin.upsert({where:{userId:admin.id},update:{},create:{userId:admin.id,permissions:['*']}});
   await prisma.user.upsert({where:{email:'demo@kinotv.uz'},update:{},create:{name:'Demo foydalanuvchi',email:'demo@kinotv.uz',passwordHash:await bcrypt.hash('Demo_User_2026!',12)}});
   const movieCategoryRows=await prisma.movieCategory.findMany();
@@ -42,6 +46,6 @@ async function main(){
   const start=new Date();start.setMinutes(0,0,0);
   const names=['Tonggi dastur','Kino yangiliklari','Ochiq film namoyishi','Texnologiya olami','Kechki dastur','Eng yaxshi lavhalar'];
   for(let i=-2;i<12;i++){const startsAt=new Date(start.getTime()+i*3600000),endsAt=new Date(startsAt.getTime()+3600000);await prisma.tVProgram.create({data:{channelId:demoChannel.id,title:names[(i+12)%names.length],description:'KinoTV qonuniy demo dastur jadvali.',startsAt,endsAt}})}
-  console.log('Haqiqiy kino katalogi va qonuniy demo TV ma’lumotlari yaratildi. Admin: admin@kinotv.uz / KinoTV_Admin_2026!');
+  console.log(`Haqiqiy kino katalogi va qonuniy demo TV ma’lumotlari yaratildi. Admin: ${adminEmail}${process.env.ADMIN_PASSWORD?' (parol xavfsiz muhit o‘zgaruvchisida)':' / KinoTV_Admin_2026!'}`);
 }
 main().catch(e=>{console.error(e);process.exit(1)}).finally(async()=>{await prisma.$disconnect();await pool.end()});

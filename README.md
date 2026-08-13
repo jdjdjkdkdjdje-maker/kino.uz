@@ -5,6 +5,15 @@ Redis keshi, MinIO fayl ombori va Next.js admin panelidan iborat to‘liq monore
 Kontent mobil kodga yozilmaydi: kino, kanal, stream va EPG ma’lumotlarining
 barchasi API orqali PostgreSQL bazasidan olinadi.
 
+## Kompyutersiz Render'ga joylash
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jdjdjkdkdjdje-maker/kino.uz/tree/arena/019ffa27-kino-uz)
+
+Telefon brauzerida tugmani ochish API, admin panel, PostgreSQL va Redis'ni bitta
+Blueprint orqali yaratadi. Render so‘raganda kamida 12 belgili yangi
+`ADMIN_PASSWORD` kiriting. Batafsil yo‘riqnoma:
+[docs/RENDER_DEPLOY.md](docs/RENDER_DEPLOY.md).
+
 ## Loyiha tuzilmasi
 
 ```text

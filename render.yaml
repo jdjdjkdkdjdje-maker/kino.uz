@@ -1,0 +1,77 @@
+services:
+  - type: web
+    name: kinotv-api-jdjdjkdkdjdje-019ffa27
+    runtime: node
+    plan: free
+    region: singapore
+    branch: arena/019ffa27-kino-uz
+    rootDir: backend
+    autoDeploy: false
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm run prisma:seed && npm run start:prod
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kinotv-db-jdjdjkdkdjdje-019ffa27
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: kinotv-cache-jdjdjkdkdjdje-019ffa27
+          type: keyvalue
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES
+        value: 30d
+      - key: ADMIN_ORIGIN
+        value: https://kinotv-admin-jdjdjkdkdjdje-019ffa27.onrender.com
+      - key: PUBLIC_API_URL
+        value: https://kinotv-api-jdjdjkdkdjdje-019ffa27.onrender.com/api/v1
+      - key: ADMIN_EMAIL
+        value: admin@kinotv.uz
+      - key: ADMIN_PASSWORD
+        sync: false
+
+  - type: web
+    name: kinotv-admin-jdjdjkdkdjdje-019ffa27
+    runtime: node
+    plan: free
+    region: singapore
+    branch: arena/019ffa27-kino-uz
+    rootDir: admin
+    autoDeploy: false
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: BACKEND_INTERNAL_URL
+        value: https://kinotv-api-jdjdjkdkdjdje-019ffa27.onrender.com
+
+  - type: keyvalue
+    name: kinotv-cache-jdjdjkdkdjdje-019ffa27
+    plan: free
+    region: singapore
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
+databases:
+  - name: kinotv-db-jdjdjkdkdjdje-019ffa27
+    plan: free
+    region: singapore
+    databaseName: kinotv
+    user: kinotv
+    postgresMajorVersion: "16"
+    ipAllowList: []

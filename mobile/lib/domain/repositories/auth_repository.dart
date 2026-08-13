@@ -1,0 +1,1 @@
+import '../../data/models/models.dart';abstract class AuthRepository{Future<UserModel?>restore();Future<UserModel>login(String identifier,String password);Future<UserModel>register(String name,String identifier,String password);Future<void>logout();Future<UserModel>settings(Map<String,dynamic>data);}

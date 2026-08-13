@@ -1,0 +1,3 @@
+-keep class io.flutter.app.** { *; }
+-keep class io.flutter.plugin.** { *; }
+-dontwarn javax.annotation.**

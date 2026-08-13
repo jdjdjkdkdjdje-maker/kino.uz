@@ -1,0 +1,2 @@
+import 'package:flutter/material.dart';import 'package:flutter_test/flutter_test.dart';
+void main(){testWidgets('Uzbek xato qayta urinish tugmasi ko‘rinadi',(tester)async{await tester.pumpWidget(const MaterialApp(home:Scaffold(body:Column(children:[Text('Internet aloqasi mavjud emas.'),TextButton(onPressed:null,child:Text('Qayta urinib ko‘rish'))]))));expect(find.text('Internet aloqasi mavjud emas.'),findsOneWidget);expect(find.text('Qayta urinib ko‘rish'),findsOneWidget);});}

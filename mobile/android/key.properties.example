@@ -1,0 +1,4 @@
+storePassword=almashtiring
+keyPassword=almashtiring
+keyAlias=kinotv
+storeFile=/mutlaq/manzil/kinotv-release.jks

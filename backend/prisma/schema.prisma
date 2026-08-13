@@ -1,0 +1,354 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ContentStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum StreamType {
+  HLS
+  DASH
+  MP4
+  OTHER
+}
+
+enum FavoriteType {
+  MOVIE
+  CHANNEL
+}
+
+enum ImportType {
+  MOVIES
+  CHANNELS
+}
+
+enum ImportStatus {
+  PROCESSING
+  COMPLETED
+  PARTIAL
+  FAILED
+}
+
+model User {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @db.VarChar(120)
+  email            String?           @unique @db.VarChar(190)
+  phone            String?           @unique @db.VarChar(30)
+  passwordHash     String
+  avatarUrl        String?
+  role             Role              @default(USER)
+  isActive         Boolean           @default(true)
+  preferredQuality String            @default("auto") @db.VarChar(20)
+  darkMode         Boolean           @default(true)
+  autoplay         Boolean           @default(true)
+  notifications    Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  admin            Admin?
+  refreshTokens    RefreshToken[]
+  movieFavorites   MovieFavorite[]
+  channelFavorites ChannelFavorite[]
+  watchHistory     WatchHistory[]
+  movieViews       MovieView[]
+  channelViews     ChannelView[]
+  importJobs       ImportJob[]
+
+  @@index([role, isActive])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Admin {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @db.Uuid
+  permissions Json     @default("[]")
+  lastLoginAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  userAgent String?
+  ipAddress String?   @db.VarChar(64)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model MovieCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(100)
+  slug        String   @unique @db.VarChar(120)
+  icon        String?  @db.VarChar(20)
+  description String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  movies      Movie[]
+
+  @@index([isActive, order])
+  @@map("categories")
+}
+
+model Genre {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(80)
+  slug      String   @unique @db.VarChar(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movies    Movie[]
+
+  @@map("genres")
+}
+
+model Actor {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(160)
+  photoUrl  String?
+  biography String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movies    Movie[]
+
+  @@index([name])
+  @@map("actors")
+}
+
+model Director {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique @db.VarChar(160)
+  photoUrl  String?
+  biography String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movies    Movie[]
+
+  @@index([name])
+  @@map("directors")
+}
+
+model Movie {
+  id             String          @id @default(uuid()) @db.Uuid
+  title          String          @db.VarChar(250)
+  originalTitle  String?         @db.VarChar(250)
+  slug           String          @unique @db.VarChar(280)
+  description    String          @db.Text
+  posterUrl      String
+  bannerUrl      String
+  releaseYear    Int
+  durationMinutes Int
+  rating         Decimal         @default(0) @db.Decimal(3, 1)
+  language       String          @db.VarChar(80)
+  country        String          @db.VarChar(100)
+  videoUrl        String?
+  trailerUrl      String?
+  subtitleUrl     String?
+  isLicensedVideo Boolean         @default(false)
+  metadataSource  String?         @db.VarChar(40)
+  externalId      String?         @db.VarChar(100)
+  status          ContentStatus   @default(ACTIVE)
+  isFeatured      Boolean         @default(false)
+  isPopular       Boolean         @default(false)
+  viewCount      BigInt          @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  categories     MovieCategory[]
+  genres         Genre[]
+  actors         Actor[]
+  directors      Director[]
+  favorites      MovieFavorite[]
+  watchHistory   WatchHistory[]
+  views          MovieView[]
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([status, isFeatured])
+  @@index([status, isPopular, viewCount(sort: Desc)])
+  @@index([releaseYear])
+  @@index([country])
+  @@index([language])
+  @@index([title])
+  @@index([isLicensedVideo, status])
+  @@unique([metadataSource, externalId])
+  @@map("movies")
+}
+
+model TVCategory {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String      @unique @db.VarChar(100)
+  slug        String      @unique @db.VarChar(120)
+  icon        String?     @db.VarChar(20)
+  description String?
+  order       Int         @default(0)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  channels    TVChannel[]
+
+  @@index([isActive, order])
+  @@map("tv_categories")
+}
+
+model TVChannel {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @db.VarChar(180)
+  slug             String            @unique @db.VarChar(200)
+  logoUrl          String
+  bannerUrl        String?
+  description      String?           @db.Text
+  country          String            @db.VarChar(100)
+  language         String            @db.VarChar(80)
+  streamUrl        String
+  streamType       StreamType        @default(HLS)
+  epgUrl           String?
+  status           ContentStatus     @default(ACTIVE)
+  order            Int               @default(0)
+  isPopular        Boolean           @default(false)
+  viewCount        BigInt            @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  categories       TVCategory[]
+  programs         TVProgram[]
+  favorites        ChannelFavorite[]
+  views            ChannelView[]
+
+  @@index([status, order])
+  @@index([status, isPopular, viewCount(sort: Desc)])
+  @@index([country])
+  @@index([language])
+  @@index([name])
+  @@map("tv_channels")
+}
+
+model TVProgram {
+  id          String    @id @default(uuid()) @db.Uuid
+  channelId   String    @db.Uuid
+  title       String    @db.VarChar(250)
+  description String?   @db.Text
+  startsAt    DateTime
+  endsAt      DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  channel     TVChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, startsAt, endsAt])
+  @@index([startsAt, endsAt])
+  @@map("tv_programs")
+}
+
+model MovieFavorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  movieId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("movie_favorites")
+}
+
+model ChannelFavorite {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  channelId String    @db.Uuid
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   TVChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channelId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("channel_favorites")
+}
+
+model WatchHistory {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  movieId         String   @db.Uuid
+  positionSeconds Int      @default(0)
+  durationSeconds Int      @default(0)
+  progress        Decimal  @default(0) @db.Decimal(5, 2)
+  completed       Boolean  @default(false)
+  lastWatchedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie           Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@index([userId, lastWatchedAt(sort: Desc)])
+  @@index([userId, completed, lastWatchedAt(sort: Desc)])
+  @@map("watch_history")
+}
+
+model MovieView {
+  id             BigInt   @id @default(autoincrement())
+  userId         String?  @db.Uuid
+  movieId        String   @db.Uuid
+  sessionId      String?  @db.VarChar(100)
+  watchedSeconds Int      @default(0)
+  createdAt      DateTime @default(now())
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  movie          Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([movieId, createdAt])
+  @@index([userId, createdAt])
+  @@map("movie_views")
+}
+
+model ChannelView {
+  id             BigInt    @id @default(autoincrement())
+  userId         String?   @db.Uuid
+  channelId      String    @db.Uuid
+  sessionId      String?   @db.VarChar(100)
+  watchedSeconds Int       @default(0)
+  createdAt      DateTime  @default(now())
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  channel        TVChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, createdAt])
+  @@index([userId, createdAt])
+  @@map("channel_views")
+}
+
+model ImportJob {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @db.Uuid
+  type        ImportType
+  status      ImportStatus @default(PROCESSING)
+  totalRows   Int          @default(0)
+  successRows Int          @default(0)
+  failedRows  Int          @default(0)
+  errors      Json         @default("[]")
+  createdAt   DateTime     @default(now())
+  completedAt DateTime?
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("import_jobs")
+}

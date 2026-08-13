@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kinotv}
+      POSTGRES_USER: ${POSTGRES_USER:-kinotv}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kinotv_dev_password}
+    ports: ["5432:5432"]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kinotv} -d ${POSTGRES_DB:-kinotv}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports: ["6379:6379"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:-kinotv_minio}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:-kinotv_minio_password}
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [minio_data:/data]
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  create-bucket:
+    image: minio/mc:latest
+    depends_on:
+      minio: {condition: service_healthy}
+    entrypoint: >
+      /bin/sh -c "mc alias set local http://minio:9000 ${S3_ACCESS_KEY:-kinotv_minio} ${S3_SECRET_KEY:-kinotv_minio_password};
+      mc mb --ignore-existing local/${S3_BUCKET:-kinotv};
+      mc anonymous set download local/${S3_BUCKET:-kinotv}; exit 0;"
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kinotv}:${POSTGRES_PASSWORD:-kinotv_dev_password}@postgres:5432/${POSTGRES_DB:-kinotv}?schema=public
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
+    ports: ["4000:4000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    command: sh -c "npx prisma migrate deploy && npm run prisma:seed && npm run start:prod"
+  admin:
+    build: ./admin
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:4000
+    ports: ["3000:3000"]
+    depends_on: [backend]
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

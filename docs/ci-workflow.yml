@@ -1,0 +1,53 @@
+name: KinoTV CI
+on:
+  push:
+  pull_request:
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: {POSTGRES_DB: kinotv, POSTGRES_USER: kinotv, POSTGRES_PASSWORD: kinotv_dev_password}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U kinotv" --health-interval 5s
+          --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    env:
+      DATABASE_URL: postgresql://kinotv:kinotv_dev_password@localhost:5432/kinotv?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-at-least-32-characters
+      JWT_REFRESH_SECRET: ci-refresh-secret-at-least-32-characters
+      ADMIN_ORIGIN: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: cd backend && npx prisma migrate deploy && npm run prisma:seed
+      - run: npm run start:prod --workspace backend > /tmp/api.log 2>&1 & echo $! > /tmp/api.pid
+      - run: npx wait-on http://localhost:4000/api/v1/health && node backend/test/smoke.mjs
+      - run: npm audit --omit=dev
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - run: flutter pub get
+        working-directory: mobile
+      - run: flutter analyze
+        working-directory: mobile
+      - run: flutter test
+        working-directory: mobile
+      - run: flutter build apk --debug --dart-define=API_BASE_URL=https://api.example.uz/api/v1
+        working-directory: mobile
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kinotv-debug-apk
+          path: mobile/build/app/outputs/flutter-apk/app-debug.apk

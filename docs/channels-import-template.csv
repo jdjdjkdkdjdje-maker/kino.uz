@@ -1,0 +1,2 @@
+name,logoUrl,bannerUrl,description,country,language,streamUrl,streamType,epgUrl,categories,status,order,isPopular
+Qonuniy Demo TV,https://cdn.example.uz/logo.png,https://cdn.example.uz/tv-banner.jpg,Qonuniy HLS demo kanal,O‘zbekiston,O‘zbek tili,https://stream.example.uz/live.m3u8,HLS,https://epg.example.uz/guide.xml,O‘zbekiston|Ko‘ngilochar,ACTIVE,10,false

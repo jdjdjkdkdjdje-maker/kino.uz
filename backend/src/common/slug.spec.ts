@@ -1,0 +1,1 @@
+import{slugify}from'./slug';describe('slugify',()=>{it('URL uchun xavfsiz qiymat yaratadi',()=>{expect(slugify("O‘zbek kinosi: Sinov!")).toBe('o-zbek-kinosi-sinov')});it('bo‘sh joylarni birlashtiradi',()=>expect(slugify('  Kino   TV  ')).toBe('kino-tv'))});

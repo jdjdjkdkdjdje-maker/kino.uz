@@ -67,10 +67,14 @@ class ApiClient {
   }
 
   bool _canRetry(DioException error) {
-    if (!['GET', 'HEAD'].contains(error.requestOptions.method.toUpperCase())) return false;
+    if (!['GET', 'HEAD'].contains(error.requestOptions.method.toUpperCase())) {
+      return false;
+    }
     if (error.type == DioExceptionType.connectionError ||
         error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout) return true;
+        error.type == DioExceptionType.receiveTimeout) {
+      return true;
+    }
     return const {408, 429, 500, 502, 503, 504}.contains(error.response?.statusCode);
   }
 

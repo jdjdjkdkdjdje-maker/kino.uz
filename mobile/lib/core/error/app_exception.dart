@@ -3,7 +3,10 @@ class AppException implements Exception { final String message; const AppExcepti
 String friendlyError(Object error) {
   if (error is AppException) return error.message;
   if (error is DioException) {
-    if (error.type == DioExceptionType.connectionError || error.type == DioExceptionType.connectionTimeout || error.type == DioExceptionType.receiveTimeout) return 'Internet aloqasi mavjud emas.';
+    if (error.type == DioExceptionType.connectionError) return 'Internet aloqasini tekshiring.';
+    if (error.type == DioExceptionType.connectionTimeout || error.type == DioExceptionType.receiveTimeout || const {502,503,504}.contains(error.response?.statusCode)) {
+      return 'Server ishga tushmoqda. Bir daqiqa kutib, “Qayta urinish”ni bosing.';
+    }
     final data=error.response?.data;
     if(data is Map && data['message']!=null){final m=data['message'];return m is List?m.join(', '):m.toString();}
     if((error.response?.statusCode??0)>=500)return 'Server bilan bog‘lanib bo‘lmadi.';

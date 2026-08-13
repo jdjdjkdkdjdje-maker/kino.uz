@@ -35,8 +35,10 @@ kino.uz/
 - kino/kanal sevimlilari, ko‘rish tarixi va davom ettirish;
 - HLS/MP4 player, live holati, fullscreen/landscape, xato va qayta ulanish;
 - TV dastur jadvali: hozirgi/keyingi ko‘rsatuv va admin CRUD;
-- admin dashboard, kino/kanal/kategoriya/janr/dastur/user/statistika CRUD;
-- 10 000 qatorgacha CSV/JSON ommaviy import va qator xatolari hisoboti;
+- professional responsive `KinoTV Admin`, SUPER ADMIN/ADMIN/MODERATOR permission profillari;
+- admin dashboard, kino/kanal/kategoriya/janr/dastur/user/statistika/sozlama CRUD;
+- HttpOnly cookie sessiyasi, rasm preview/upload va S3 ishlamasa PostgreSQL media fallback;
+- 10 000 qatorgacha CSV/JSON ommaviy import va qator/maydon xatolari hisoboti;
 - S3/MinIO presigned upload, Redis home keshi, PostgreSQL indekslari;
 - Swagger/OpenAPI, Docker Compose, Prisma migration va idempotent demo seed.
 

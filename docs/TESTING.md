@@ -8,6 +8,7 @@ npm test --workspace backend
 npm run build --workspace admin
 npm audit --omit=dev
 API_URL=http://localhost:4000/api/v1 node backend/test/smoke.mjs
+node backend/test/admin-regression.mjs
 cd mobile && flutter pub get && flutter analyze && flutter test
 ```
 

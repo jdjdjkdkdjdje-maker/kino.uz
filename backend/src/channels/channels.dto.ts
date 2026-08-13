@@ -8,6 +8,7 @@ export class ChannelQueryDto extends PaginationDto {
   @ApiPropertyOptional() @IsOptional() @IsString() category?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() country?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() language?: string;
+  @ApiPropertyOptional({ enum: ContentStatus }) @IsOptional() @IsEnum(ContentStatus) status?: ContentStatus;
   @ApiPropertyOptional() @IsOptional() @Type(() => Boolean) @IsBoolean() popular?: boolean;
 }
 export class CreateChannelDto {

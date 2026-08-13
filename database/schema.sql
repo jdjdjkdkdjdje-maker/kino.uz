@@ -96,3 +96,14 @@ ALTER TABLE "movies" ADD COLUMN "metadataSource" VARCHAR(40);
 ALTER TABLE "movies" ADD COLUMN "externalId" VARCHAR(100);
 CREATE INDEX "movies_isLicensedVideo_status_idx" ON "movies"("isLicensedVideo", "status");
 CREATE UNIQUE INDEX "movies_metadataSource_externalId_key" ON "movies"("metadataSource", "externalId");
+
+-- Migration 20260813000300_admin_platform
+CREATE TABLE "app_settings" ("id" TEXT PRIMARY KEY,"data" JSONB NOT NULL DEFAULT '{}',"updatedBy" UUID,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "notification_logs" ("id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),"title" VARCHAR(160) NOT NULL,"body" TEXT NOT NULL,"topic" VARCHAR(120) NOT NULL DEFAULT 'all',"kind" VARCHAR(40) NOT NULL DEFAULT 'GENERAL',"status" VARCHAR(30) NOT NULL DEFAULT 'QUEUED',"providerMessageId" TEXT,"error" TEXT,"createdBy" UUID,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "media_assets" ("id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),"key" TEXT NOT NULL UNIQUE,"contentType" VARCHAR(100) NOT NULL,"size" INTEGER NOT NULL,"data" BYTEA NOT NULL,"createdBy" UUID,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "notification_logs_createdAt_idx" ON "notification_logs"("createdAt" DESC);
+CREATE INDEX "notification_logs_status_idx" ON "notification_logs"("status");
+CREATE INDEX "media_assets_createdAt_idx" ON "media_assets"("createdAt" DESC);
+ALTER TABLE "app_settings" ADD CONSTRAINT "app_settings_updatedBy_fkey" FOREIGN KEY("updatedBy") REFERENCES "users"("id") ON DELETE SET NULL;
+ALTER TABLE "notification_logs" ADD CONSTRAINT "notification_logs_createdBy_fkey" FOREIGN KEY("createdBy") REFERENCES "users"("id") ON DELETE SET NULL;
+ALTER TABLE "media_assets" ADD CONSTRAINT "media_assets_createdBy_fkey" FOREIGN KEY("createdBy") REFERENCES "users"("id") ON DELETE SET NULL;

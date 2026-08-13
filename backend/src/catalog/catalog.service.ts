@@ -3,10 +3,11 @@ import { ContentStatus } from '../generated/prisma/client';
 import { slugify } from '../common/slug';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
+import { AppSettingsService } from '../settings/settings.service';
 import { CategoryKind, CreateCategoryDto, CreateGenreDto, UpdateCategoryDto, UpdateGenreDto } from './catalog.dto';
 @Injectable()
 export class CatalogService {
-  constructor(private readonly prisma: PrismaService, private readonly cache: RedisService) {}
+  constructor(private readonly prisma: PrismaService, private readonly cache: RedisService, private readonly settings: AppSettingsService) {}
   async all() {
     const [movieCategories, tvCategories, genres] = await Promise.all([
       this.prisma.movieCategory.findMany({ where: { isActive: true }, orderBy: [{ order: 'asc' }, { name: 'asc' }], include: { _count: { select: { movies: { where: { status: ContentStatus.ACTIVE } } } } } }),
@@ -37,7 +38,7 @@ export class CatalogService {
     if (cached) return cached;
     const includeMovie = { categories: { take: 2, select: { id: true, name: true, slug: true } }, genres: { take: 3, select: { id: true, name: true, slug: true } } } as const;
     const includeChannel = { categories: { take: 2, select: { id: true, name: true, slug: true } } } as const;
-    const [banner, recommended, popularMovies, newMovies, liveChannels, popularChannels, movieCategories, tvCategories] = await Promise.all([
+    const [banner, recommended, popularMovies, newMovies, liveChannels, popularChannels, movieCategories, tvCategories, appSettings] = await Promise.all([
       this.prisma.movie.findFirst({ where: { status: ContentStatus.ACTIVE, isFeatured: true }, include: includeMovie, orderBy: { updatedAt: 'desc' } }),
       this.prisma.movie.findMany({ where: { status: ContentStatus.ACTIVE, isFeatured: true }, include: includeMovie, take: 12, orderBy: { rating: 'desc' } }),
       this.prisma.movie.findMany({ where: { status: ContentStatus.ACTIVE }, include: includeMovie, take: 12, orderBy: { viewCount: 'desc' } }),
@@ -46,8 +47,9 @@ export class CatalogService {
       this.prisma.tVChannel.findMany({ where: { status: ContentStatus.ACTIVE, isPopular: true }, include: includeChannel, take: 12, orderBy: { viewCount: 'desc' } }),
       this.prisma.movieCategory.findMany({ where: { isActive: true }, take: 20, orderBy: { order: 'asc' } }),
       this.prisma.tVCategory.findMany({ where: { isActive: true }, take: 20, orderBy: { order: 'asc' } }),
+      this.settings.get(),
     ]);
-    const result = { banner: banner ? this.publicMovieCard(banner) : null, recommended: recommended.map((movie) => this.publicMovieCard(movie)), popularMovies: popularMovies.map((movie) => this.publicMovieCard(movie)), newMovies: newMovies.map((movie) => this.publicMovieCard(movie)), liveChannels: liveChannels.map(({ streamUrl: _s, epgUrl: _e, ...x }) => x), popularChannels: popularChannels.map(({ streamUrl: _s, epgUrl: _e, ...x }) => x), movieCategories, tvCategories };
+    const result = { appSettings, banner: banner ? this.publicMovieCard(banner) : null, recommended: recommended.map((movie) => this.publicMovieCard(movie)), popularMovies: popularMovies.map((movie) => this.publicMovieCard(movie)), newMovies: newMovies.map((movie) => this.publicMovieCard(movie)), liveChannels: liveChannels.map(({ streamUrl: _s, epgUrl: _e, ...x }) => x), popularChannels: popularChannels.map(({ streamUrl: _s, epgUrl: _e, ...x }) => x), movieCategories, tvCategories };
     await this.cache.setJson('home:v1', result, 60);
     return result;
   }

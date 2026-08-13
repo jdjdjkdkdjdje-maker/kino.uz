@@ -15,12 +15,13 @@ export class MoviesService {
   async findAll(query: MovieQueryDto, admin = false) {
     const { page, limit } = query;
     const where: Prisma.MovieWhereInput = {
-      ...(admin ? {} : { status: ContentStatus.ACTIVE }),
+      ...(admin ? (query.status ? { status: query.status } : {}) : { status: ContentStatus.ACTIVE }),
       ...(query.q ? { OR: [{ title: { contains: query.q, mode: 'insensitive' } }, { originalTitle: { contains: query.q, mode: 'insensitive' } }] } : {}),
       ...(query.category ? { categories: { some: this.isUuid(query.category) ? { id: query.category } : { slug: query.category } } } : {}),
       ...(query.genre ? { genres: { some: this.isUuid(query.genre) ? { id: query.genre } : { slug: query.genre } } } : {}),
       ...(query.year ? { releaseYear: query.year } : {}),
       ...(query.country ? { country: { equals: query.country, mode: 'insensitive' } } : {}),
+      ...(query.language ? { language: { equals: query.language, mode: 'insensitive' } } : {}),
       ...(query.featured !== undefined ? { isFeatured: query.featured } : {}),
     };
     const orderBy: Prisma.MovieOrderByWithRelationInput = query.sort === 'popular' ? { viewCount: 'desc' } : query.sort === 'rating' ? { rating: 'desc' } : query.sort === 'year' ? { releaseYear: 'desc' } : { createdAt: 'desc' };

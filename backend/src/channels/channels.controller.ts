@@ -21,5 +21,8 @@ export class ChannelsController {
 export class AdminChannelsController {
   constructor(private readonly service: ChannelsService) {}
   @Get() all(@Query() query: ChannelQueryDto) { return this.service.findAll(query, true); }
+  @Post() create(@Body() dto: CreateChannelDto) { return this.service.create(dto); }
   @Get(':id') one(@Param('id') id: string) { return this.service.findOne(id, false); }
+  @Put(':id') update(@Param('id') id: string, @Body() dto: UpdateChannelDto) { return this.service.update(id, dto); }
+  @Delete(':id') remove(@Param('id') id: string) { return this.service.remove(id); }
 }

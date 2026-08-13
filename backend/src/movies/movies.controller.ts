@@ -26,5 +26,8 @@ export class MoviesController {
 export class AdminMoviesController {
   constructor(private readonly service: MoviesService) {}
   @Get() findAll(@Query() query: MovieQueryDto) { return this.service.findAll(query, true); }
+  @Post() create(@Body() dto: CreateMovieDto) { return this.service.create(dto); }
   @Get(':id') findOne(@Param('id') id: string) { return this.service.findOne(id, false); }
+  @Put(':id') update(@Param('id') id: string, @Body() dto: UpdateMovieDto) { return this.service.update(id, dto); }
+  @Delete(':id') remove(@Param('id') id: string) { return this.service.remove(id); }
 }

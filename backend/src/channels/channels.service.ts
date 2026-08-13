@@ -12,7 +12,7 @@ export class ChannelsService {
   constructor(private readonly prisma: PrismaService, private readonly cache: RedisService) {}
   async findAll(query: ChannelQueryDto, admin = false) {
     const where: Prisma.TVChannelWhereInput = {
-      ...(admin ? {} : { status: ContentStatus.ACTIVE }),
+      ...(admin ? (query.status ? { status: query.status } : {}) : { status: ContentStatus.ACTIVE }),
       ...(query.q ? { name: { contains: query.q, mode: 'insensitive' } } : {}),
       ...(query.category ? { categories: { some: this.isUuid(query.category) ? { id: query.category } : { slug: query.category } } } : {}),
       ...(query.country ? { country: { equals: query.country, mode: 'insensitive' } } : {}),

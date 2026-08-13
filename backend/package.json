@@ -15,7 +15,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "test:smoke": "node test/smoke.mjs"
+    "test:smoke": "node test/smoke.mjs",
+    "test:admin": "node test/admin-regression.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.637.0",

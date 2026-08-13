@@ -9,6 +9,8 @@ export class MovieQueryDto extends PaginationDto {
   @ApiPropertyOptional() @IsOptional() @IsString() genre?: string;
   @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(1888) @Max(2100) year?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() country?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() language?: string;
+  @ApiPropertyOptional({ enum: ContentStatus }) @IsOptional() @IsEnum(ContentStatus) status?: ContentStatus;
   @ApiPropertyOptional({ enum: ['newest','popular','rating','year'] }) @IsOptional() @IsString() sort?: string = 'newest';
   @ApiPropertyOptional() @IsOptional() @Type(() => Boolean) @IsBoolean() featured?: boolean;
 }

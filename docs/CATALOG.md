@@ -9,7 +9,7 @@ Boshlang‘ich seed quyidagi haqiqiy filmlarni PostgreSQL bazasiga yozadi:
 | Inception | 2010 | 8.8 | IMDb `tt1375666` | yo‘q, rasmiy treyler bor |
 | Interstellar | 2014 | 8.7 | IMDb `tt0816692` | yo‘q, rasmiy treyler bor |
 | Parasite | 2019 | 8.5 | IMDb `tt6751668` | yo‘q, rasmiy treyler bor |
-| Oppenheimer | 2023 | 8.3 | IMDb `tt15398776` | yo‘q, rasmiy treyler bor |
+| Oppenheimer | 2023 | 8.2 | IMDb `tt15398776` | yo‘q, rasmiy treyler bor |
 
 \* Reytinglar seed tayyorlangan 2026-08-13 sanasidagi katalog qiymatlaridir va
 vaqt o‘tishi bilan manbada o‘zgarishi mumkin. Admin yoki keyingi metadata sync

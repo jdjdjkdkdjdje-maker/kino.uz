@@ -7,7 +7,7 @@ services:
     branch: arena/019ffa27-kino-uz
     rootDir: backend
     autoDeploy: true
-    buildCommand: npm install && npx prisma generate && npm run build
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
     startCommand: npx prisma migrate deploy && npm run prisma:seed && npm run start:prod
     healthCheckPath: /api/v1/health
     envVars:
@@ -49,7 +49,7 @@ services:
     branch: arena/019ffa27-kino-uz
     rootDir: admin
     autoDeploy: true
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     healthCheckPath: /login
     envVars:

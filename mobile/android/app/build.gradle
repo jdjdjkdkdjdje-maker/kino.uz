@@ -4,7 +4,7 @@ def keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 android {
     namespace = "uz.kinotv.app"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = JavaVersion.VERSION_17 }
